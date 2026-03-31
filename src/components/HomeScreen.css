@@ -1,0 +1,68 @@
+.home {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  z-index: 5;
+}
+
+.home-eyebrow {
+  font-size: 11px;
+  letter-spacing: 8px;
+  color: #333;
+  font-family: monospace;
+}
+
+.home-title {
+  font-size: 28px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: 2px;
+  font-family: monospace;
+}
+
+.film-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 480px;
+}
+
+.film-btn {
+  background: transparent;
+  border: 1px solid #1a1a1a;
+  color: #444;
+  padding: 16px 12px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  font-family: monospace;
+}
+
+.film-btn:hover {
+  border-color: #333;
+  color: #888;
+}
+
+.film-btn.active {
+  border-color: #2a7a2a;
+  color: #4dff4d;
+  box-shadow: 0 0 20px rgba(77, 255, 77, 0.1);
+}
+
+.film-btn .num {
+  display: block;
+  font-size: 9px;
+  color: #222;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.film-btn.active .num {
+  color: #2a7a2a;
+}
