@@ -210,15 +210,6 @@ function Planet() {
         <sphereGeometry args={[3, 128, 128]} />
         <planetMaterial ref={matRef} />
       </mesh>
-      <mesh>
-        <sphereGeometry args={[3 * 1.25, 64, 64]} />
-        <atmosphereMaterial
-          ref={atmRef}
-          transparent
-          depthWrite={false}
-          side={2}
-        />
-      </mesh>
     </>
   );
 }
