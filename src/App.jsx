@@ -1,38 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LoadingScreen from "./components/LoadingScreen";
 import HomeScreen from "./components/HomeScreen";
 import SceneScreen from "./components/SceneScreen";
 import WarpTransition from "./components/WarpTransition";
-import "./App.css";
 
 export default function App() {
-  const [screen, setScreen] = useState("loading"); // loading | home | warp | scene
+  const [screen, setScreen] = useState("loading");
   const [activeScene, setActiveScene] = useState(null);
 
   const handleLoadingDone = () => setScreen("home");
-
+  const handleWarpDone = () => {
+    setActiveScene(1);
+    setScreen("scene");
+  };
   const handleEnterScene = (num) => {
     if (num !== 1) return;
     setScreen("warp");
-    setTimeout(() => {
-      setActiveScene(num);
-      setScreen("scene");
-    }, 700);
   };
-
   const handleGoHome = () => {
     setScreen("home");
     setActiveScene(null);
   };
 
   return (
-    <div className="app">
-      {/* 별빛 배경 — 항상 표시 */}
+    <div className="relative w-screen h-screen bg-black overflow-hidden font-mono">
       <StarField />
-
       {screen === "loading" && <LoadingScreen onDone={handleLoadingDone} />}
       {screen === "home" && <HomeScreen onEnter={handleEnterScene} />}
-      {screen === "warp" && <WarpTransition />}
+      {screen === "warp" && <WarpTransition onDone={handleWarpDone} />}
       {screen === "scene" && activeScene === 1 && (
         <SceneScreen onBack={handleGoHome} />
       )}
@@ -49,11 +44,11 @@ function StarField() {
     opacity: Math.random() * 0.7 + 0.1,
   }));
   return (
-    <div className="star-field">
+    <div className="absolute inset-0 pointer-events-none z-0">
       {stars.map((s) => (
         <div
           key={s.id}
-          className="star"
+          className="absolute rounded-full bg-white"
           style={{
             width: s.size,
             height: s.size,
