@@ -59,47 +59,35 @@ const PlanetMaterial = shaderMaterial(
   `,
 );
 
-// ── 선홍색 파티클 셰이더 (인터스텔라 스타일) ──
 const ParticleMaterial = shaderMaterial(
   { uTime: 0, uProgress: 0 },
   `
-    attribute float aSize;
-    attribute float aRandom;
-    attribute vec3  aColor;
-    varying   float vRandom;
-    varying   vec3  vColor;
-    uniform   float uTime;
-    uniform   float uProgress;
-    void main() {
-      vRandom = aRandom;
-      vColor  = aColor;
-      vec3 pos = position;
-      pos.x += sin(uTime * 0.8 + aRandom * 6.28) * 0.1  * aRandom;
-      pos.y += cos(uTime * 0.6 + aRandom * 3.14) * 0.08 * aRandom;
-      pos.z += sin(uTime * 0.4 + aRandom * 9.42) * 0.06;
-      vec4 mvPos   = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = aSize * (300.0 / -mvPos.z) * uProgress;
-      gl_Position  = projectionMatrix * mvPos;
-    }
+    attribute float aSize; attribute float aRandom; attribute vec3 aColor;
+    varying float vRandom; varying vec3 vColor;
+    uniform float uTime; uniform float uProgress;
+    void main(){
+      vRandom=aRandom; vColor=aColor;
+      vec3 pos=position;
+      pos.x+=sin(uTime*0.8+aRandom*6.28)*0.1*aRandom;
+      pos.y+=cos(uTime*0.6+aRandom*3.14)*0.08*aRandom;
+      pos.z+=sin(uTime*0.4+aRandom*9.42)*0.06;
+      vec4 mvPos=modelViewMatrix*vec4(pos,1.0);
+      gl_PointSize=aSize*(300.0/-mvPos.z)*uProgress;
+      gl_Position=projectionMatrix*mvPos;}
   `,
   `
-    varying float vRandom;
-    varying vec3  vColor;
-    uniform float uTime;
-    uniform float uProgress;
-    void main() {
-      vec2  uv      = gl_PointCoord - 0.5;
-      float dist    = length(uv);
-      if (dist > 0.5) discard;
-      float alpha   = smoothstep(0.5, 0.0, dist);
-      float core    = smoothstep(0.15, 0.0, dist) * 0.9;
-      float twinkle = 0.65 + 0.35 * sin(uTime * 3.0 + vRandom * 12.56);
-      gl_FragColor  = vec4(vColor + core, alpha * twinkle * uProgress);
-    }
+    varying float vRandom; varying vec3 vColor;
+    uniform float uTime; uniform float uProgress;
+    void main(){
+      vec2 uv=gl_PointCoord-0.5; float dist=length(uv);
+      if(dist>0.5)discard;
+      float alpha=smoothstep(0.5,0.0,dist);
+      float core=smoothstep(0.15,0.0,dist)*0.9;
+      float twinkle=0.65+0.35*sin(uTime*3.0+vRandom*12.56);
+      gl_FragColor=vec4(vColor+core, alpha*twinkle*uProgress);}
   `,
 );
 
-// ── 선홍색 배경 글로우 셰이더 ──
 const GlowMaterial = shaderMaterial(
   { uTime: 0, uProgress: 0 },
   `
@@ -110,49 +98,27 @@ const GlowMaterial = shaderMaterial(
     }
   `,
   `
-    uniform float uTime;
-    uniform float uProgress;
-    varying vec2  vUv;
-
-    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-    float noise(vec2 p) {
-      vec2 i = floor(p), f = fract(p);
-      f = f * f * (3.0 - 2.0 * f);
-      return mix(
-        mix(hash(i), hash(i + vec2(1,0)), f.x),
-        mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x),
-        f.y
-      );
-    }
-    float fbm(vec2 p) {
-      float v = 0.0, a = 0.5;
-      for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.1; a *= 0.5; }
-      return v;
-    }
-
-    void main() {
-      vec2  uv     = vUv - 0.5;
-      float n1     = fbm(uv * 2.0  + vec2(uTime * 0.025, uTime * 0.018));
-      float n2     = fbm(uv * 4.5  + vec2(n1 * 1.5) + uTime * 0.012);
-      float n      = mix(n1, n2, 0.55);
-      float radial = 1.0 - smoothstep(0.0, 0.85, length(uv));
-
-      vec3 dark   = vec3(0.06, 0.0,  0.0);
-      vec3 mid    = vec3(0.42, 0.01, 0.05);
-      vec3 bright = vec3(0.92, 0.04, 0.16);
-
-      vec3 col = mix(dark, mid, n);
-      col = mix(col, bright, radial * n * 0.9);
-      col *= (0.5 + 0.5 * radial);
-
-      gl_FragColor = vec4(col, uProgress * 0.98);
-    }
+    uniform float uTime; uniform float uProgress; varying vec2 vUv;
+    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float noise(vec2 p){
+      vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+    float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<4;i++){v+=a*noise(p);p*=2.1;a*=0.5;}return v;}
+    void main(){
+      vec2 uv=vUv-0.5;
+      float n1=fbm(uv*2.0+vec2(uTime*0.025,uTime*0.018));
+      float n2=fbm(uv*4.5+vec2(n1*1.5)+uTime*0.012);
+      float n=mix(n1,n2,0.55);
+      float radial=1.0-smoothstep(0.0,0.85,length(uv));
+      vec3 col=mix(vec3(0.06,0.0,0.0),vec3(0.42,0.01,0.05),n);
+      col=mix(col,vec3(0.92,0.04,0.16),radial*n*0.9);
+      col*=(0.5+0.5*radial);
+      gl_FragColor=vec4(col,uProgress*0.98);}
   `,
 );
 
 extend({ PlanetMaterial, ParticleMaterial, GlowMaterial });
 
-// ── 행성 ──
 function Planet() {
   const matRef = useRef();
   useFrame((s) => {
@@ -166,16 +132,15 @@ function Planet() {
   );
 }
 
-// ── 파티클 데이터 ──
 function buildParticles(count) {
-  const pos = new Float32Array(count * 3);
-  const sz = new Float32Array(count);
-  const rnd = new Float32Array(count);
-  const col = new Float32Array(count * 3);
+  const pos = new Float32Array(count * 3),
+    sz = new Float32Array(count);
+  const rnd = new Float32Array(count),
+    col = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
-    const r = 2.0 + Math.random() * 14;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 2.0 + Math.random() * 14,
+      theta = Math.random() * Math.PI * 2,
+      phi = Math.acos(2 * Math.random() - 1);
     pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
     pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
     pos[i * 3 + 2] = r * Math.cos(phi);
@@ -183,17 +148,14 @@ function buildParticles(count) {
     rnd[i] = Math.random();
     const t = Math.random();
     if (t < 0.5) {
-      // 선홍색
       col[i * 3] = 0.85 + Math.random() * 0.15;
       col[i * 3 + 1] = 0.02 + Math.random() * 0.06;
       col[i * 3 + 2] = 0.05 + Math.random() * 0.1;
     } else if (t < 0.8) {
-      // 밝은 분홍
       col[i * 3] = 1.0;
       col[i * 3 + 1] = 0.25 + Math.random() * 0.35;
       col[i * 3 + 2] = 0.25 + Math.random() * 0.35;
     } else {
-      // 거의 흰색
       col[i * 3] = 1.0;
       col[i * 3 + 1] = 0.75 + Math.random() * 0.25;
       col[i * 3 + 2] = 0.75 + Math.random() * 0.25;
@@ -204,11 +166,9 @@ function buildParticles(count) {
 
 const PARTICLE_DATA = buildParticles(3000);
 
-// ── 선홍색 씬 ──
 function CrimsonScene({ progress }) {
-  const particleRef = useRef();
-  const glowRef = useRef();
-
+  const particleRef = useRef(),
+    glowRef = useRef();
   useFrame((s) => {
     const t = s.clock.elapsedTime;
     if (particleRef.current) {
@@ -220,10 +180,8 @@ function CrimsonScene({ progress }) {
       glowRef.current.uProgress = progress;
     }
   });
-
   return (
     <>
-      {/* 배경 글로우 */}
       <mesh position={[0, 0, -10]}>
         <planeGeometry args={[50, 50]} />
         <glowMaterial
@@ -233,8 +191,6 @@ function CrimsonScene({ progress }) {
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-
-      {/* 파티클 */}
       <points>
         <bufferGeometry>
           <bufferAttribute
@@ -265,7 +221,6 @@ function CrimsonScene({ progress }) {
   );
 }
 
-// ── 페이드 오버레이 ──
 function FadeOverlay({ opacity }) {
   if (opacity <= 0) return null;
   return (
@@ -281,57 +236,72 @@ function FadeOverlay({ opacity }) {
   );
 }
 
-// ── SceneScreen ──
+// ── 페이드 트랜지션 헬퍼 ──
+function runFade(duration, onTick, onDone) {
+  const start = performance.now();
+  const tick = (now) => {
+    const t = Math.min((now - start) / duration, 1.0);
+    onTick(t);
+    if (t < 1.0) requestAnimationFrame(tick);
+    else onDone?.();
+  };
+  requestAnimationFrame(tick);
+}
+
 export default function SceneScreen({ onBack }) {
   const [mode, setMode] = useState("planet");
   const [fadeOpacity, setFadeOpacity] = useState(0);
   const [crimsonProg, setCrimsonProg] = useState(0);
 
-  const handleSwitch = () => {
+  // 행성 → 선홍색
+  const handleToCrimson = () => {
     if (mode !== "planet") return;
     setMode("fading");
-
-    const startFade = performance.now();
-    const animFade = (now) => {
-      const t = Math.min((now - startFade) / 1500, 1.0);
-      setFadeOpacity(t);
-      if (t < 1.0) {
-        requestAnimationFrame(animFade);
-      } else {
+    runFade(
+      1500,
+      (t) => setFadeOpacity(t),
+      () => {
         setMode("crimson");
-        const startC = performance.now();
-        const animC = (now2) => {
-          const t2 = Math.min((now2 - startC) / 1500, 1.0);
-          setFadeOpacity(1.0 - t2);
-          setCrimsonProg(t2);
-          if (t2 < 1.0) requestAnimationFrame(animC);
-        };
-        requestAnimationFrame(animC);
-      }
-    };
-    requestAnimationFrame(animFade);
+        runFade(1500, (t) => {
+          setFadeOpacity(1.0 - t);
+          setCrimsonProg(t);
+        });
+      },
+    );
+  };
+
+  // 선홍색 → 행성
+  const handleToPlanet = () => {
+    if (mode !== "crimson") return;
+    setMode("fading");
+    runFade(
+      1500,
+      (t) => {
+        setFadeOpacity(t);
+        setCrimsonProg(1.0 - t);
+      },
+      () => {
+        setMode("planet");
+        setCrimsonProg(0);
+        runFade(1500, (t) => setFadeOpacity(1.0 - t));
+      },
+    );
   };
 
   return (
     <div className="absolute inset-0 z-[3]">
       <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
         <color attach="background" args={["#000000"]} />
-
-        {/* 행성 — planet/fading 단계 */}
         {(mode === "planet" || mode === "fading") && <Planet />}
-
-        {/* 선홍색 씬 — crimson/fading 단계 */}
         {(mode === "crimson" || mode === "fading") && (
           <CrimsonScene progress={crimsonProg} />
         )}
-
         <FadeOverlay opacity={fadeOpacity} />
         <OrbitControls />
       </Canvas>
 
-      {/* UI 오버레이 */}
       <div className="absolute inset-0 pointer-events-none z-[4]">
-        {/* 뒤로가기 */}
+        {/* 갤럭시 맵으로 */}
         <button
           onClick={onBack}
           className="absolute top-6 left-6 pointer-events-auto bg-transparent border border-[#1a4a1a] text-[#3a8a3a] px-4 py-2 text-[11px] tracking-[3px] font-mono cursor-pointer hover:border-[#4dff4d] hover:text-[#4dff4d] transition-all duration-300"
@@ -339,13 +309,23 @@ export default function SceneScreen({ onBack }) {
           ← GALAXY MAP
         </button>
 
-        {/* 씬 전환 버튼 — planet 단계에만 표시 */}
+        {/* 행성 → 선홍색 전환 버튼 */}
         {mode === "planet" && (
           <button
-            onClick={handleSwitch}
+            onClick={handleToCrimson}
             className="absolute bottom-14 left-1/2 -translate-x-1/2 pointer-events-auto bg-transparent border border-[#8B0000] text-[#ff4444] px-6 py-2.5 text-[11px] tracking-[4px] font-mono cursor-pointer hover:border-[#ff4444] hover:shadow-[0_0_20px_rgba(255,68,68,0.3)] transition-all duration-300 animate-pulse"
           >
             ASTROPHAGE DETECTED →
+          </button>
+        )}
+
+        {/* 선홍색 → 행성 복귀 버튼 */}
+        {mode === "crimson" && (
+          <button
+            onClick={handleToPlanet}
+            className="absolute bottom-14 left-1/2 -translate-x-1/2 pointer-events-auto bg-transparent border border-[#1a4a1a] text-[#3a8a3a] px-6 py-2.5 text-[11px] tracking-[4px] font-mono cursor-pointer hover:border-[#4dff4d] hover:text-[#4dff4d] hover:shadow-[0_0_20px_rgba(77,255,77,0.2)] transition-all duration-300"
+          >
+            ← RETURN TO ORBIT
           </button>
         )}
 
